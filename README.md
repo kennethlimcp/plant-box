@@ -1,5 +1,8 @@
 ### Introduction
 
+#### Features
+
+- safe OTA firmware update - turns off all peripherals
 
 #### Components
 
