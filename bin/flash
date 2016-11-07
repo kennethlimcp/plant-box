@@ -1,0 +1,10 @@
+#!/bin/bash
+shopt -s expand_aliases
+source ~/.aliases
+
+if [ $# -ne 2 ];
+ then
+  echo "Usage $0 deviceName directory"
+else
+  rm *.bin;pf $1 $2
+fi
