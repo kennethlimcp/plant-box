@@ -15,18 +15,28 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
 unsigned long old_time = 0;
 uint8_t retryCount = 0;
+String controlCommand = "";
 
 //Function prototypes
 void checkWiFi();
+void otaHandler();
+int plantControl(String cmd);
+void turnOffPeripherals();
 
 void setup() {
 	WiFi.on();
+	System.disableUpdates();
+ System.on(firmware_update_pending, otaHandler);
 
 	strip.begin();
 	strip.show(); // Initialize all pixels to 'off'
 
 	Serial.begin(9600);
 	pinMode(moisturePin, INPUT);
+	pinMode(D7, OUTPUT);
+	digitalWrite(D7, LOW);
+
+	Particle.function("control", plantControl);
 
 	if (singleCard.begin()){
 		Particle.publish("plant/status/motorShield", "detected");
@@ -37,17 +47,17 @@ void setup() {
 	}
 	else {
 		Particle.publish("plant/status/motorShield", "missing");
-		while(1) Particle.process();
+		//while(1) Particle.process();
 	}
 }
 
+
 void loop() {
 	checkWiFi();
-
 }
 
 void checkWiFi() {
-		if(millis() - old_time >= 5000){
+		if(millis() - old_time >= 2000){
 			if(retryCount < 10){
 				if(!WiFi.ready()){
 					WiFi.connect();
@@ -66,4 +76,34 @@ void checkWiFi() {
 			}
 			old_time = millis();
 		}
+}
+
+void otaHandler () {
+	turnOffPeripherals();
+
+	System.enableUpdates();
+	digitalWrite(D7, HIGH);
+}
+
+void turnOffPeripherals() {
+	singleCard.A(STOP, 0);
+	singleCard.standby();
+	strip.show();
+}
+
+void processControl(String arg) {
+	if(arg == "safemode") {
+			turnOffPeripherals();
+			System.enterSafeMode();
+	}
+	controlCommand = "";
+}
+
+int plantControl(String cmd) {
+		if(cmd == "safemode") {
+			controlCommand = "safemode";
+			return 1;
+		}
+		else
+			return 0;
 }
