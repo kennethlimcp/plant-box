@@ -1,17 +1,11 @@
 #include "SPI_Motor.h"
-#include "neopixel.h"
+#include "neopixel-fn.h"
 
 SYSTEM_MODE(SEMI_AUTOMATIC);
 
-SPI_Motor singleCard(A0);	//Hootie81's motor shield using A0 CS pin
+SPI_Motor motor(A0);	//Hootie81's motor shield using A0 CS pin
 
 #define moisturePin A1
-
-#define PIXEL_COUNT 12
-#define PIXEL_PIN D3
-#define PIXEL_TYPE WS2812B
-
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
 unsigned long old_time = 0;
 uint8_t retryCount = 0;
@@ -21,15 +15,18 @@ String controlCommand = "";
 void checkWiFi();
 void otaHandler();
 int plantControl(String cmd);
+void processControl();
 void turnOffPeripherals();
+
+void rainbow(uint8_t wait);
 
 void setup() {
 	WiFi.on();
 	System.disableUpdates();
  System.on(firmware_update_pending, otaHandler);
 
-	strip.begin();
-	strip.show(); // Initialize all pixels to 'off'
+	led.begin();
+	led.show(); // Initialize all pixels to 'off'
 
 	Serial.begin(9600);
 	pinMode(moisturePin, INPUT);
@@ -38,12 +35,12 @@ void setup() {
 
 	Particle.function("control", plantControl);
 
-	if (singleCard.begin()){
+	if (motor.begin()){
 		Particle.publish("plant/status/motorShield", "detected");
 
-		singleCard.resume();
-		singleCard.A(STOP, 0);
-		singleCard.A(CW);
+		motor.resume();
+		motor.A(STOP, 0);
+		motor.A(CW);
 	}
 	else {
 		Particle.publish("plant/status/motorShield", "missing");
@@ -54,6 +51,8 @@ void setup() {
 
 void loop() {
 	checkWiFi();
+
+	processControl();
 }
 
 void checkWiFi() {
@@ -86,15 +85,26 @@ void otaHandler () {
 }
 
 void turnOffPeripherals() {
-	singleCard.A(STOP, 0);
-	singleCard.standby();
-	strip.show();
+	motor.A(STOP, 0);
+	motor.standby();
+ colorWipe(led.Color(0, 0, 0), 0); //off
+	led.show();
 }
 
-void processControl(String arg) {
-	if(arg == "safemode") {
+void processControl() {
+	if(controlCommand == "safemode") {
 			turnOffPeripherals();
 			System.enterSafeMode();
+	}
+	else if(controlCommand == "testlight") {
+		rainbow(20);
+		colorWipe(led.Color(0, 0, 0), 0); //off
+		led.show();
+	}
+	else if(controlCommand == "testmotor") {
+		motor.A(255);
+		delay(1000);
+		motor.A(STOP, 0);
 	}
 	controlCommand = "";
 }
@@ -104,6 +114,10 @@ int plantControl(String cmd) {
 			controlCommand = "safemode";
 			return 1;
 		}
+		else if(cmd == "testlight") {
+			controlCommand = "testlight";
+			return 2;
+		}
 		else
-			return 0;
+			return -1;
 }
