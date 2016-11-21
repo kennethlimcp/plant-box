@@ -62,12 +62,13 @@ void loop() {
 		//void ping(pin_t trig_pin, pin_t echo_pin, uint32_t wait, bool info)
  	ping(D1, D2, 20, true);
 		publishCheckTime = millis();
+		Particle.publish("plant/status/moisture", String(analogRead(moisturePin)));
 	}
 
 }
 
 void checkWiFi() {
-		if(millis() - wifiCheckTime >= 2000){
+		if(millis() - wifiCheckTime >= 1000){
 			if(retryCount < 10){
 				if(!WiFi.ready()){
 					WiFi.connect();
