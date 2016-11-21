@@ -12,3 +12,21 @@
 4. [Moisture sensor](https://www.dfrobot.com/index.php?route=product/product&filter_name=SEN0114&product_id=599)
 5. [Diaphragm Liquid Pump](http://www.sgbotic.com/index.php?dispatch=products.view&product_id=2119)
 6. [Neopixel ring](https://www.adafruit.com/products/1643)
+
+#### Pinout
+
+
+| Peripheral|Pin| Photon USB|Pin|Peripheral|
+| :--------:|:-:|:---------:|:--:|:-------:|
+||Vin||3V3||
+||GND||RST||
+||TX||VBAT||
+||RX||GND||
+||WKP||D7||
+||DAC||D6||
+|SPI MOSI|A5||D5||
+|SPI MISO|A4||D4||
+|SPI SCK|A3||D3||
+|SPI SS|A2||D2|ECHO|
+|Moisture sensor|A1||D1|TRIG|
+|Motor SS|A0||D0|Neopixel|
