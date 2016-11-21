@@ -104,7 +104,14 @@ void processControl() {
 	else if(controlCommand == "testmotor") {
 		motor.A(255);
 		delay(1000);
-		motor.A(STOP, 0);
+		//motor.A(STOP, 0);
+		motor.A(0);
+	}
+	else if(controlCommand == "motoron") {
+		motor.A(255);
+	}
+	else if(controlCommand == "motoroff") {
+		motor.A(0);
 	}
 	controlCommand = "";
 }
@@ -118,6 +125,17 @@ int plantControl(String cmd) {
 			controlCommand = "testlight";
 			return 2;
 		}
-		else
+		else if(cmd == "testmotor") {
+			controlCommand = "testmotor";
+			return 3;
+		}
+		else if(cmd == "motoron") {
+			controlCommand = "motoron";
+			return 4;
+		}
+		else if(cmd == "motoroff") {
+			controlCommand = "motoroff";
+			return 5;
+		}
 			return -1;
 }
