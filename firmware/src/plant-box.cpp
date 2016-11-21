@@ -1,5 +1,6 @@
 #include "SPI_Motor.h"
 #include "neopixel-fn.h"
+#include "functions.h"
 
 SYSTEM_MODE(SEMI_AUTOMATIC);
 
@@ -7,7 +8,9 @@ SPI_Motor motor(A0);	//Hootie81's motor shield using A0 CS pin
 
 #define moisturePin A1
 
-unsigned long old_time = 0;
+unsigned long wifiCheckTime = 0;
+unsigned long publishCheckTime = 0;
+
 uint8_t retryCount = 0;
 String controlCommand = "";
 
@@ -27,6 +30,7 @@ void setup() {
 
 	led.begin();
 	led.show(); // Initialize all pixels to 'off'
+
 
 	Serial.begin(9600);
 	pinMode(moisturePin, INPUT);
@@ -53,10 +57,17 @@ void loop() {
 	checkWiFi();
 
 	processControl();
+
+	if(millis() - publishCheckTime > 2000) {
+		//void ping(pin_t trig_pin, pin_t echo_pin, uint32_t wait, bool info)
+ 	ping(D1, D2, 20, true);
+		publishCheckTime = millis();
+	}
+
 }
 
 void checkWiFi() {
-		if(millis() - old_time >= 2000){
+		if(millis() - wifiCheckTime >= 2000){
 			if(retryCount < 10){
 				if(!WiFi.ready()){
 					WiFi.connect();
@@ -73,7 +84,7 @@ void checkWiFi() {
 				retryCount = 0;
 				WiFi.on();
 			}
-			old_time = millis();
+			wifiCheckTime = millis();
 		}
 }
 
