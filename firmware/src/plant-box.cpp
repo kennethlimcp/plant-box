@@ -3,6 +3,7 @@
 #include "functions.h"
 
 SYSTEM_MODE(SEMI_AUTOMATIC);
+STARTUP(pinMode(PIXEL_PIN, INPUT));
 
 SPI_Motor motor(A0);	//Hootie81's motor shield using A0 CS pin
 
@@ -10,6 +11,7 @@ SPI_Motor motor(A0);	//Hootie81's motor shield using A0 CS pin
 
 unsigned long wifiCheckTime = 0;
 unsigned long publishCheckTime = 0;
+const unsigned long PUBLISH_PERIOD_MS = 60000;
 
 uint8_t retryCount = 0;
 String controlCommand = "";
@@ -20,8 +22,11 @@ void otaHandler();
 int plantControl(String cmd);
 void processControl();
 void turnOffPeripherals();
-
+void publishData();
 void rainbow(uint8_t wait);
+void publishData();
+void deviceNameHandler(const char *topic, const char *data);
+uint32_t ping(pin_t trig_pin, pin_t echo_pin, uint32_t wait, bool info);
 
 void setup() {
 	WiFi.on();
@@ -29,8 +34,8 @@ void setup() {
  System.on(firmware_update_pending, otaHandler);
 
 	led.begin();
+ colorWipe(led.Color(0, 0, 0), 0); //off
 	led.show(); // Initialize all pixels to 'off'
-
 
 	Serial.begin(9600);
 	pinMode(moisturePin, INPUT);
@@ -38,6 +43,7 @@ void setup() {
 	digitalWrite(D7, LOW);
 
 	Particle.function("control", plantControl);
+ Particle.subscribe("spark/", deviceNameHandler);
 
 	if (motor.begin()){
 		Particle.publish("plant/status/motorShield", "detected");
@@ -48,7 +54,6 @@ void setup() {
 	}
 	else {
 		Particle.publish("plant/status/motorShield", "missing");
-		//while(1) Particle.process();
 	}
 }
 
@@ -58,11 +63,12 @@ void loop() {
 
 	processControl();
 
-	if(millis() - publishCheckTime > 2000) {
-		//void ping(pin_t trig_pin, pin_t echo_pin, uint32_t wait, bool info)
- 	ping(D1, D2, 20, true);
+	if(millis() - publishCheckTime > PUBLISH_PERIOD_MS) {
+ 	uint32_t height = 7 - ping(D1, D2, 20, false);
+		uint32_t moisture = analogRead(moisturePin);
+		publishData(height, moisture);
 		publishCheckTime = millis();
-		Particle.publish("plant/status/moisture", String(analogRead(moisturePin)));
+
 	}
 
 }
@@ -125,6 +131,14 @@ void processControl() {
 	else if(controlCommand == "motoroff") {
 		motor.A(0);
 	}
+	else if(controlCommand == "lighton") {
+		colorWipe(led.Color(255, 255, 255), 0); //off
+		led.show();
+	}
+	else if(controlCommand == "lightoff") {
+		colorWipe(led.Color(0, 0, 0), 0); //off
+		led.show();
+	}
 	controlCommand = "";
 }
 
@@ -148,6 +162,14 @@ int plantControl(String cmd) {
 		else if(cmd == "motoroff") {
 			controlCommand = "motoroff";
 			return 5;
+		}
+		else if(cmd == "lighton") {
+			controlCommand = "lighton";
+			return 6;
+		}
+		else if(cmd == "lightoff") {
+			controlCommand = "lightoff";
+			return 7;
 		}
 			return -1;
 }

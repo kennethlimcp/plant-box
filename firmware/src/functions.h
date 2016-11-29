@@ -6,7 +6,10 @@ Created on: 22 Nov 2016
 
 #include "application.h"
 
-void ping(pin_t trig_pin, pin_t echo_pin, uint32_t wait, bool info)
+String deviceName;
+const char *PUBLISH_EVENT_NAME = "plantData";
+
+uint32_t ping(pin_t trig_pin, pin_t echo_pin, uint32_t wait, bool info)
 {
 	uint32_t duration, inches, cm;
 	static bool init = false;
@@ -41,4 +44,22 @@ void ping(pin_t trig_pin, pin_t echo_pin, uint32_t wait, bool info)
 		//Serial.printlnf("%6d in / %6d cm / %6d us", inches, cm, duration);
 	//}
 	delay(wait); // slow down the output
+
+	return cm;
+}
+
+void publishData(uint32_t a, uint32_t b) {
+	if(deviceName == "") {
+		 Particle.publish("spark/device/name");
+	}
+	else {
+		char buf[256];
+		snprintf(buf, sizeof(buf), "{\"a\":%lu,\"b\":%lu,\"n\":\"%s\"}", a, b, deviceName.c_str());
+		Serial.printlnf("publishing %s", buf);
+		Particle.publish(PUBLISH_EVENT_NAME, buf, PRIVATE);
+	}
+}
+
+void deviceNameHandler(const char *topic, const char *data) {
+	deviceName = data;
 }
