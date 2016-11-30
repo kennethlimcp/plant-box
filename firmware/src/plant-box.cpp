@@ -64,7 +64,7 @@ void loop() {
 	processControl();
 
 	if(millis() - publishCheckTime > PUBLISH_PERIOD_MS) {
- 	uint32_t height = 7 - ping(D1, D2, 20, false);
+ 	uint32_t height = 8 - ping(D1, D2, 20, false);
 		uint32_t moisture = analogRead(moisturePin);
 		publishData(height, moisture);
 		publishCheckTime = millis();
@@ -121,7 +121,7 @@ void processControl() {
 	}
 	else if(controlCommand == "testmotor") {
 		motor.A(255);
-		delay(1000);
+		delay(3000);
 		//motor.A(STOP, 0);
 		motor.A(0);
 	}
