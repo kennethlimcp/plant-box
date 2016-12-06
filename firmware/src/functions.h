@@ -5,8 +5,12 @@ Created on: 22 Nov 2016
 */
 
 #include "application.h"
+#include "SparkJson.h"
+String deviceName = "";
+String owner = "";
+String lightSetting = "";
+String waterSetting = "";
 
-String deviceName;
 const char *PUBLISH_EVENT_NAME = "plantData";
 
 uint32_t ping(pin_t trig_pin, pin_t echo_pin, uint32_t wait, bool info)
@@ -42,15 +46,15 @@ uint32_t ping(pin_t trig_pin, pin_t echo_pin, uint32_t wait, bool info)
 		//Serial.println();
 	} //else { /* Informational Output */
 		//Serial.printlnf("%6d in / %6d cm / %6d us", inches, cm, duration);
-	//}
-	delay(wait); // slow down the output
+		//}
+		delay(wait); // slow down the output
 
-	return cm;
+		return cm;
 }
 
 void publishData(uint32_t a, uint32_t b) {
 	if(deviceName == "") {
-		 Particle.publish("spark/device/name");
+		Particle.publish("spark/device/name");
 	}
 	else {
 		char buf[256];
@@ -62,12 +66,12 @@ void publishData(uint32_t a, uint32_t b) {
 
 void getData(void) {
 	if(deviceName == "") {
-		 Particle.publish("spark/device/name");
+		Particle.publish("spark/device/name");
 	}
 	else {
 		char buf1[20];
 		snprintf(buf1, sizeof(buf1), "{\"n\":\"%s\"}", deviceName.c_str());
-		Particle.publish("plantData-get", buf1, PRIVATE);
+		Particle.publish("get-Pdata", buf1, PRIVATE);
 	}
 }
 
@@ -76,5 +80,22 @@ void deviceNameHandler(const char *topic, const char *data) {
 }
 
 void infoHandler(const char *topic, const char *data) {
-	deviceName = data;
+	// This isn't particularly efficient; there are too many copies of the data floating
+	// around here, but the data is not very large and it's not kept around long so it
+	// should be fine.
+
+StaticJsonBuffer<256> jsonBuffer;
+char *mutableCopy = strdup(data);
+JsonObject& root = jsonBuffer.parseObject(mutableCopy);
+free(mutableCopy);
+
+	const char* o = root["owner"];
+	const char* l = root["required_light"];
+	const char* w = root["required_water"];
+
+	owner = String(o);
+	lightSetting = String(l);
+	waterSetting = String(w);
+
+//	Serial.printlnf("a=%s b=%s c=%s", o, l, w);
 }

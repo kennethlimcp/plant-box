@@ -11,7 +11,9 @@ SPI_Motor motor(A0);	//Hootie81's motor shield using A0 CS pin
 
 unsigned long wifiCheckTime = 0;
 unsigned long publishCheckTime = 0;
+unsigned long getInfoCheckTime = 0;
 const unsigned long PUBLISH_PERIOD_MS = 60000;
+const unsigned long GET_PERIOD_MS = 5000;
 
 uint8_t retryCount = 0;
 String controlCommand = "";
@@ -46,7 +48,7 @@ void setup() {
 
 	Particle.function("control", plantControl);
  Particle.subscribe("spark/", deviceNameHandler);
- Particle.subscribe("hook-response/plantData-get", infoHandler);
+ Particle.subscribe("hook-response/get-Pdata/0", infoHandler, MY_DEVICES);
 
 
 	if (motor.begin()){
@@ -71,8 +73,24 @@ void loop() {
  	uint32_t height = 8 - ping(D1, D2, 20, false);
 		uint32_t moisture = analogRead(moisturePin);
 		publishData(height, moisture);
-		getData();
+
+		publishCheckTime = millis();
 	}
+
+	if(millis() - getInfoCheckTime > GET_PERIOD_MS) {
+		getData();
+
+		getInfoCheckTime = millis();
+
+		if(owner == "") {
+					colorWipe(led.Color(0, 0, 0), 0); //off
+		}
+		else {
+				colorWipe(led.Color(25, 25, 25), 0); //on
+		}
+	}
+
+
 }
 
 void checkWiFi() {
