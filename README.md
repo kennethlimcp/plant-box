@@ -30,3 +30,8 @@
 |SPI SS|A2||D2|ECHO|
 |Moisture sensor|A1||D1|TRIG|
 |Motor SS|A0||D0|Neopixel|
+
+#### Resources
+
+1. [Firebase <-> Particle Cloud tutorial](https://github.com/rickkas7/firebase_tutorial)
+2. [pulseIn for ultrasonic sensor](https://gist.github.com/technobly/349a916fb2cdeb372b5e)
