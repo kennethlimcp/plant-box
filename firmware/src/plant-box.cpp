@@ -67,10 +67,8 @@ void loop() {
  	uint32_t height = 8 - ping(D1, D2, 20, false);
 		uint32_t moisture = analogRead(moisturePin);
 		publishData(height, moisture);
-		publishCheckTime = millis();
-
+		getData();
 	}
-
 }
 
 void checkWiFi() {

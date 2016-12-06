@@ -60,6 +60,17 @@ void publishData(uint32_t a, uint32_t b) {
 	}
 }
 
+void getData(void) {
+	if(deviceName == "") {
+		 Particle.publish("spark/device/name");
+	}
+	else {
+		char buf1[20];
+		snprintf(buf1, sizeof(buf1), "{\"n\":\"%s\"}", deviceName.c_str());
+		Particle.publish("plantData-get", buf1, PRIVATE);
+	}
+}
+
 void deviceNameHandler(const char *topic, const char *data) {
 	deviceName = data;
 }
