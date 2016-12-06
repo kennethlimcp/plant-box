@@ -25,6 +25,8 @@ void turnOffPeripherals();
 void publishData();
 void rainbow(uint8_t wait);
 void publishData();
+void getData();
+void infoHandler(const char *topic, const char *data);
 void deviceNameHandler(const char *topic, const char *data);
 uint32_t ping(pin_t trig_pin, pin_t echo_pin, uint32_t wait, bool info);
 
@@ -44,6 +46,8 @@ void setup() {
 
 	Particle.function("control", plantControl);
  Particle.subscribe("spark/", deviceNameHandler);
+ Particle.subscribe("hook-response/plantData-get", infoHandler);
+
 
 	if (motor.begin()){
 		Particle.publish("plant/status/motorShield", "detected");

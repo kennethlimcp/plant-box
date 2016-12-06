@@ -74,3 +74,7 @@ void getData(void) {
 void deviceNameHandler(const char *topic, const char *data) {
 	deviceName = data;
 }
+
+void infoHandler(const char *topic, const char *data) {
+	deviceName = data;
+}
