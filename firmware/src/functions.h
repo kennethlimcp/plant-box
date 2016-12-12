@@ -11,6 +11,8 @@ String owner = "";
 String lightSetting = "";
 String waterSetting = "";
 
+#define DEBUG 1
+
 const char *PUBLISH_EVENT_NAME = "plantData";
 
 uint32_t ping(pin_t trig_pin, pin_t echo_pin, uint32_t wait, bool info)
