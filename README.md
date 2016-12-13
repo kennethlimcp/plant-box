@@ -3,6 +3,9 @@
 #### Features
 
 - safe OTA firmware update - turns off all peripherals
+- water tank height monitoring
+- moisture level sensing
+- RGB lightning
 
 #### Components
 
@@ -35,3 +38,4 @@
 
 1. [Firebase <-> Particle Cloud tutorial](https://github.com/rickkas7/firebase_tutorial)
 2. [pulseIn for ultrasonic sensor](https://gist.github.com/technobly/349a916fb2cdeb372b5e)
+3. [Spark Interval Timer](https://github.com/pkourany/SparkIntervalTimer)
