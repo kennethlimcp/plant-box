@@ -15,7 +15,7 @@ unsigned long wifiCheckTime = 0;
 unsigned long publishCheckTime = 0;
 unsigned long getInfoCheckTime = 0;
 unsigned long oldSixtySec = 0;
-const unsigned long PUBLISH_PERIOD_MS = 10*60*1000;
+const unsigned long PUBLISH_PERIOD_MS = 60*1000;
 const unsigned long GET_PERIOD_MS = 5000;
 
 uint8_t retryCount = 0;
@@ -91,7 +91,7 @@ void loop() {
 
 	//publish information to firebase
 	if(millis() - publishCheckTime > PUBLISH_PERIOD_MS) {
- 	uint32_t height = 6 - ping(D1, D2, 20, false);
+ 	uint32_t height = 7 - ping(D1, D2, 20, false);
 
 		if(height <= 2)
 			updateRefillStatus(true);
