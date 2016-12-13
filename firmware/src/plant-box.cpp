@@ -14,6 +14,7 @@ SPI_Motor motor(A0);	//Hootie81's motor shield using A0 CS pin
 unsigned long wifiCheckTime = 0;
 unsigned long publishCheckTime = 0;
 unsigned long getInfoCheckTime = 0;
+unsigned long oldSixtySec = 0;
 const unsigned long PUBLISH_PERIOD_MS = 10*60*1000;
 const unsigned long GET_PERIOD_MS = 5000;
 
@@ -30,6 +31,7 @@ void publishData();
 void rainbow(uint8_t wait);
 void publishData();
 void getData();
+void updateRefillStatus(uint32_t a);
 void infoHandler(const char *topic, const char *data);
 void deviceNameHandler(const char *topic, const char *data);
 uint32_t ping(pin_t trig_pin, pin_t echo_pin, uint32_t wait, bool info);
@@ -38,6 +40,7 @@ IntervalTimer lightsTimer;
 IntervalTimer sixtySecTimer;
 bool sixtySecSignal = false;
 bool lightsOffSignal = false;
+bool requireRefill = false;
 
 void sixtySecFunction() {
 		sixtySecSignal = true;
@@ -77,7 +80,7 @@ void setup() {
 		Particle.publish("plant/status/motorShield", "missing");
 	}
 
-	sixtySecTimer.begin(sixtySecFunction, 60*1000*2, hmSec); //60s
+	//sixtySecTimer.begin(sixtySecFunction, 30*1000*2, hmSec); //60s
 }
 
 
@@ -88,22 +91,37 @@ void loop() {
 
 	//publish information to firebase
 	if(millis() - publishCheckTime > PUBLISH_PERIOD_MS) {
- 	uint32_t height = 8 - ping(D1, D2, 20, false);
+ 	uint32_t height = 6 - ping(D1, D2, 20, false);
+
+		if(height <= 2)
+			updateRefillStatus(true);
+		else
+			updateRefillStatus(false);
+
 		uint32_t moisture = analogRead(moisturePin);
 		publishData(height, moisture);
 
 		publishCheckTime = millis();
 	}
 
+
 	if(millis() - getInfoCheckTime > GET_PERIOD_MS) {
 		getData();
 
 		getInfoCheckTime = millis();
 
+		requireRefill = !requireRefill;
+		updateRefillStatus(requireRefill);
+
 		if(owner == "") {
 					colorWipe(led.Color(0, 0, 0), 0); //off
 					motor.A(0);
 		}
+	}
+
+	if(millis() - oldSixtySec > 60*1000) {
+		sixtySecFunction();
+		oldSixtySec = millis();
 	}
 
 	if(sixtySecSignal) {
@@ -115,18 +133,18 @@ void loop() {
 			double pumpDuration = constrain(waterSetting.toInt(), 0, 100);
 			pumpDuration = 3.0*(pumpDuration/100.0);	//% of 3seconds which is the max pump turn on time
 
-			/*motor.A(255);
-			delay(pumpDuration);
-			motor.A(0);*/
+			motor.A(255);
+			delay(pumpDuration*1000);
+			motor.A(0);
 
 			int lightIntensity = constrain(lightSetting.toInt(), 0, 100);
 			lightIntensity = map(lightIntensity, 0, 100, 0, 255);
-			colorWipe(led.Color(255, 255, 255), 0); //on
-			lightsTimer.begin(lightoffFunction, 30*1000*2, hmSec);	//30s
+			colorWipe(led.Color(lightIntensity, lightIntensity, lightIntensity), 0); //on
+			lightsTimer.begin(lightoffFunction, 10*1000*2, hmSec);	//30s
 			sixtySecSignal = false;
 			lightsOffSignal = false;
 
-			if (DEBUG) Particle.publish("timer/sixty");
+			if (DEBUG) Particle.publish("light/value", String(lightIntensity) +  "," + String(pumpDuration));
 		}
 	}
 
