@@ -91,7 +91,7 @@ void loop() {
 
 	//publish information to firebase
 	if(millis() - publishCheckTime > PUBLISH_PERIOD_MS) {
- 	uint32_t height = 7 - ping(D1, D2, 20, false);
+ 	uint32_t height = 8 - ping(D1, D2, 20, false);
 
 		if(height <= 2)
 			updateRefillStatus(true);
