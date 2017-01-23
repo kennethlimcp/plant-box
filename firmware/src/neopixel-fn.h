@@ -11,7 +11,9 @@ Created on: 05 Nov 2016
 #define PIXEL_PIN D0
 #define PIXEL_TYPE WS2812B
 
-Adafruit_NeoPixel led = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
+//Adafruit_NeoPixel led = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
+
+Adafruit_NeoPixel led(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
 //Declare function prototypes
 void rainbow(uint8_t wait);
