@@ -15,7 +15,7 @@ unsigned long wifiCheckTime = 0;
 unsigned long publishCheckTime = 0;
 unsigned long getInfoCheckTime = 0;
 unsigned long oldSixtySec = 0;
-const unsigned long PUBLISH_PERIOD_MS = 60*1000;
+const unsigned long PUBLISH_PERIOD_MS = 30*60*1000;
 const unsigned long GET_PERIOD_MS = 5000;
 
 uint8_t retryCount = 0;
@@ -37,7 +37,6 @@ void deviceNameHandler(const char *topic, const char *data);
 uint32_t ping(pin_t trig_pin, pin_t echo_pin, uint32_t wait, bool info);
 
 IntervalTimer lightsTimer;
-IntervalTimer sixtySecTimer;
 bool sixtySecSignal = false;
 bool lightsOffSignal = false;
 bool requireRefill = false;
@@ -56,7 +55,7 @@ void setup() {
  System.on(firmware_update_pending, otaHandler);
 
 	led.begin();
- colorWipe(led.Color(0, 0, 0), 0); //off
+ colorWipe(led.Color(255, 255, 255), 0); //on
 	led.show(); // Initialize all pixels to 'off'
 
 	Serial.begin(9600);
@@ -79,8 +78,6 @@ void setup() {
 	else {
 		Particle.publish("plant/status/motorShield", "missing");
 	}
-
-	//sixtySecTimer.begin(sixtySecFunction, 30*1000*2, hmSec); //60s
 }
 
 
@@ -119,14 +116,14 @@ void loop() {
 		}
 	}
 
-	if(millis() - oldSixtySec > 60*1000) {
+	if(millis() - oldSixtySec > 60*60*1000) {
 		sixtySecFunction();
 		oldSixtySec = millis();
 	}
 
 	if(sixtySecSignal) {
 		if(owner == "") {
-					colorWipe(led.Color(0, 0, 0), 0); //off
+					/*colorWipe(led.Color(0, 0, 0), 0); //off*/
 					motor.A(0);
 		}
 		else {
@@ -137,24 +134,25 @@ void loop() {
 			delay(pumpDuration*1000);
 			motor.A(0);
 
-			int lightIntensity = constrain(lightSetting.toInt(), 0, 100);
+			/*int lightIntensity = constrain(lightSetting.toInt(), 0, 100);
 			lightIntensity = map(lightIntensity, 0, 100, 0, 255);
 			colorWipe(led.Color(lightIntensity, lightIntensity, lightIntensity), 0); //on
-			lightsTimer.begin(lightoffFunction, 10*1000*2, hmSec);	//30s
+			lightsTimer.begin(lightoffFunction, 10*1000*2, hmSec);	//30s*/
 			sixtySecSignal = false;
 			lightsOffSignal = false;
 
-			if (DEBUG) Particle.publish("light/value", String(lightIntensity) +  "," + String(pumpDuration));
+			/*if (DEBUG) Particle.publish("plant001/value", String(lightIntensity) +  "," + String(pumpDuration));*/
+			if(DEBUG) Particle.publish("plant-watered");
 		}
 	}
 
-	if(lightsOffSignal) {
+	/*if(lightsOffSignal) {
 		colorWipe(led.Color(0, 0, 0), 0); //off
 		lightsTimer.end();
 		lightsOffSignal = false;
 
 		if (DEBUG) Particle.publish("timer/lightsoff");
-		}
+		}*/
 }
 
 void checkWiFi() {
