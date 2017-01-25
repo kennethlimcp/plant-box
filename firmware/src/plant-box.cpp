@@ -109,11 +109,11 @@ void loop() {
 
 		requireRefill = !requireRefill;
 		updateRefillStatus(requireRefill);
-
+/*
 		if(owner == "") {
 					colorWipe(led.Color(0, 0, 0), 0); //off
 					motor.A(0);
-		}
+		}*/
 	}
 
 	if(millis() - oldSixtySec > 60*60*1000) {
