@@ -70,10 +70,8 @@ void setup() {
 
 	if (motor.begin()){
 		Particle.publish("plant/status/motorShield", "detected");
-
 		motor.resume();
 		motor.A(STOP, 0);
-		motor.A(CW);
 	}
 	else {
 		Particle.publish("plant/status/motorShield", "missing");
@@ -130,10 +128,9 @@ void loop() {
 			double pumpDuration = constrain(waterSetting.toInt(), 0, 100);
 			pumpDuration = 3.0*(pumpDuration/100.0);	//% of 3seconds which is the max pump turn on time
 
-			motor.A(255);
+			motor.A(CW, 255);
 			delay(pumpDuration*1000);
-			motor.A(0);
-
+			motor.A(STOP, 0);
 			/*int lightIntensity = constrain(lightSetting.toInt(), 0, 100);
 			lightIntensity = map(lightIntensity, 0, 100, 0, 255);
 			colorWipe(led.Color(lightIntensity, lightIntensity, lightIntensity), 0); //on
@@ -202,13 +199,12 @@ void processControl() {
 		led.show();
 	}
 	else if(controlCommand == "testmotor") {
-		motor.A(255);
+		motor.A(CW, 255);
 		delay(3000);
-		//motor.A(STOP, 0);
-		motor.A(0);
+		motor.A(STOP, 0);
 	}
 	else if(controlCommand == "motoron") {
-		motor.A(255);
+		motor.A(CW, 255);
 	}
 	else if(controlCommand == "motoroff") {
 		motor.A(0);
