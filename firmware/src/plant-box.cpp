@@ -19,6 +19,7 @@ const unsigned long PUBLISH_PERIOD_MS = 30*60*1000;
 const unsigned long GET_PERIOD_MS = 5000;
 
 uint8_t retryCount = 0;
+uint8_t height = 0;
 String controlCommand = "";
 
 //Function prototypes
@@ -63,6 +64,7 @@ void setup() {
 	pinMode(D7, OUTPUT);
 	digitalWrite(D7, LOW);
 
+	Particle.variable("height", height);
 	Particle.function("control", plantControl);
  Particle.subscribe("spark/", deviceNameHandler);
  Particle.subscribe("hook-response/get-Pdata/0", infoHandler, MY_DEVICES);
@@ -78,15 +80,16 @@ void setup() {
 	}
 }
 
-
 void loop() {
 	checkWiFi();
 
 	processControl();
 
+	height = 8 - ping(D1, D2, 20, false);
+
 	//publish information to firebase
 	if(millis() - publishCheckTime > PUBLISH_PERIOD_MS) {
- 	uint32_t height = 8 - ping(D1, D2, 20, false);
+ 	/*uint32_t height = 8 - ping(D1, D2, 20, false);*/
 
 		if(height <= 2)
 			updateRefillStatus(true);
